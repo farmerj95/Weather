@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<body onload="loadLast_City()"></body>
+</head>
+
+<body>
+    <header>
+        <h1>Weather DashBoard</h1>
+        <label class="input" for="city-input">Choose City</label>
+        <input class="input" type="text" id="city-input">
+        <button class="input" id="getCity" onclick="forecastToday()">Get Today's Weather</button>
+        <button class="input" id="getCity" onclick="forecastFive()">Get 5 Day Forecast</button>
+        <label class="input" for="history">Search History</label>
+        <select name="history" id="history-select" onselect="historyForecast()"></select>
+
+    </header>
+    <div id="forecast"></div>
+    <Script>
+        let searchHistory = [];
+        var lat = 0;
+        var lon = 0;
+        var city = "";
+        //need to split this into today and 5 day
+        function displayWeatherInfo(x) {
+            console.log(city)
+            // This line grabs the input from the textbox
+            var queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&appid=7758a0a2e7e596b9ee3eb0ba1a3e2444";
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).then(function (response) {
+                console.log(response)
+                console.log(response.city.name + ", " + response.city.country)
+                var forecastDiv = $("<div>");
+                //to create div and add city;
+                var cityName = response.city.name + ", " + response.city.country;
+                console.log(city)
+                // console.log(cityName)
+                if (x == 1) {
+                    var todayWeather = $("<h2>").text("Today's Weather for: " + cityName).attr
+                        ({
+                            "class": "title",
+                        });
+                    forecastDiv.append(todayWeather);
+                    console.log(cityName)
+                    var columnDiv = $("<div>").attr
+                        ({
+                            "id": "today",
+                        });
+                }
+                else {
+                    var fiveDay = $("<h2>").text("Five Day Forecast for: " + cityName).attr
+                        ({
+                            "class": "title",
+                        });
+                    forecastDiv.append(fiveDay);
+                    console.log(cityName)
+                    var columnDiv = $("<div>").attr
+                        ({
+                            "id": "five-day",
+                            "class": "forecast",
+                        });
+                }
+                forecastDiv.append(columnDiv);
+                for (var i = 0; i < x; i++) {
+                    var summaryDiv = $("<div>").attr
+                        ({
+                            "class": "detail",
+                        });
+                    var day = $("<h4>").text("Day " + (i + 1) + ": " + response.list[8 * i].dt_txt);
+                    summaryDiv.append(day);
+                    //keep track of day
+                    console.log("Day " + (i + 1))
+                    //weather and description
+                    console.log("Weather: " + response.list[8 * i].weather[0].main)
+                    var weather = $("<p>").text("Weather: " + response.list[8 * i].weather[0].main + " (" + response.list[i].weather[0].description + ")");
+                    summaryDiv.append(weather);
+                    //icon
+                    var icon = response.list[i].weather[0].icon;
+                    var imgURL = "http://openweathermap.org/img/wn/" + response.list[8 * i].weather[0].icon + "@2x.png";
+                    var image = $("<img>").attr("src", imgURL);
+                    summaryDiv.append(image);
+                    columnDiv.append(summaryDiv);
+                    var detailDiv = $("<div>").attr
+                        ({
+                            "class": "detail",
+                        });
+                    var details = $("<h4>").text("Details");
+                    detailDiv.append(details);
+                    // forecastDiv.append(detailDiv);
+                    //temperature
+                    console.log((response.list[8 * i].main.temp) + " Kelvin")
+                    var temperature = $("<p>").text(("Temperature: " + (response.list[8 * i].main.temp - 273).toFixed(2) + " C"));
+                    detailDiv.append(temperature);
+                    //humidity
+                    console.log((response.list[8 * i].main.humidity) + "%")
+                    var humidity = $("<p>").text(("Humidity: " + response.list[8 * i].main.humidity) + "%");
+                    detailDiv.append(humidity);
+                    //wind speed
+                    console.log((response.list[8 * i].wind.speed) + " kmh wind speed")
+                    var wind = $("<p>").text(("Wind Speed: " + (response.list[8 * i].wind.speed).toFixed(2) + " kmh"));
+                    detailDiv.append(wind);
+                    // console.log(response.city.coord.lat + "," + response.city.coord.lon)
+                    columnDiv.append(detailDiv);
+                }
+                //gets the coordinates for UVI call
+                lat = response.city.coord.lat;
+                lon = response.city.coord.lon;
+                var queryUVI = "https://api.openweathermap.org/data/2.5/uvi/forecast?lat=" + lat + "&lon=" + lon + "&appid=7758a0a2e7e596b9ee3eb0ba1a3e2444";
+                $.ajax({
+                    url: queryUVI,
+                    method: "GET"
+                }).then(function (UVI) {
+                    var uviDiv = $("<div>").attr
+                        ({
+                            "class": "detail",
+                            "id": "uvi-div"
+                        });
+                    var uviHeading = $("<h2>").text("UVI Index");
+                    uviDiv.append(uviHeading);
+                    console.log(UVI)
+                    for (var i = 0; i < x; i++) {
+                        console.log(UVI[i].value + " UVI ")
+                        var uvi = $("<p>").text("Day " + (i + 1) + ": " + UVI[i].value + " ");
+                        if (3 > UVI[i].value && UVI[i].value >= 0) {
+                            console.log("low")
+                            uvi.attr
+                                ({
+                                    "class": "uvi low",
+                                })
+                        }
+                        else if (6 > UVI[i].value && UVI[i].value >= 3) {
+                            console.log("moderate")
+                            uvi.attr
+                                ({
+                                    "class": "uvi moderate",
+                                })
+                        }
+                        else if (8 > UVI[i].value && UVI[i].value >= 6) {
+                            console.log("uvi high")
+                            uvi.attr
+                                ({
+                                    "class": "uvi high",
+                                })
+                        }
+                        else if (11 > UVI[i].value && UVI[i].value >= 8) {
+                            console.log("very high")
+                            uvi.attr
+                                ({
+                                    "class": "uvi very_high",
+                                })
+                        }
+                        else if (UVI[i].value >= 11) {
+                            console.log("extreme")
+                            uvi.attr
+                                ({
+                                    "class": "uvi extreme",
+                                })
+                        }
+                        else {
+                            console.log("out of range")
+                        }
+                        uviDiv.append(uvi);
+                    }
+                    forecastDiv.append(uviDiv);
+                });
+                $("#forecast").prepend(forecastDiv);
+            });
+
+        }
+        //adds to history
+        function addHistory() {
+            var city = $("#city-input").val();
+            searchHistory.push(city);
+            console.log(searchHistory)
+            localStorage.setItem("search-history", JSON.stringify(searchHistory));
+        }
+        function loadHistory() {
+            var storedHistory = JSON.parse(localStorage.getItem("search-history"));
+            searchHistory = storedHistory;
+            //creates search history dropdown
+            if (searchHistory != "undefined" && searchHistory != null && searchHistory.length != null
+                && searchHistory.length > 0) {
+                var select = document.getElementById("history-select");
+
+                for (var i = 0; i < searchHistory.length; i++) {
+                    var opt = searchHistory[i];
+                    var el = document.createElement("option");
+                    el.textContent = opt;
+                    el.value = opt;
+                    select.appendChild(el);
+                }
+            }
+            else {
+
+            }
+        }
+        //loads last entry in history
+        function loadLast_City() {
+            loadHistory()
+            if (searchHistory != "undefined" && searchHistory != null && searchHistory.length != null
+                && searchHistory.length > 0) {
+                city = searchHistory[searchHistory.length - 1];
+                displayWeatherInfo(5)
+            }
+            else {
+                console.log("no search history")
+            }
+        }
+        //function for today and 5 dave forecast
+        function forecastToday() {
+            city = $("#city-input").val();
+            displayWeatherInfo(1)
+            addHistory()
+        }
+        function forecastFive() {
+            city = $("#city-input").val();
+            displayWeatherInfo(5)
+            addHistory()
+        }
+        $("#history-select").change(function historyForecast() {
+            city = $("#history-select").val();
+            displayWeatherInfo(5)
+        });
+
+    </Script>
+</body>
+
+</html>

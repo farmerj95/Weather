@@ -1,0 +1,69 @@
+body
+{
+    text-align: center;
+    background-color: rgb(71, 211, 169);
+}
+header
+{
+    border: 1px solid black;
+    padding-bottom: 10px;
+    background-color: rgb(146, 55, 55);
+}
+div
+{
+    width: auto;
+    
+}
+img
+{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+button
+{
+    text-align: center;
+}
+.title
+{
+    background-color: white;
+}
+.forecast
+{
+    column-count: 5;
+    column-width: auto;
+}
+.detail
+{
+    border: 1px solid rgb(63, 59, 59);
+}
+#uvi-div
+{
+    padding-bottom: 10px;
+    width: auto;
+}
+.uvi
+{
+    display: inline;
+    border: 1px solid black;
+}
+.low
+{
+   background-color: green;
+}
+.moderate
+{
+    background-color: yellow;
+}
+.high
+{
+    background-color: orange;
+}
+.very_high
+{
+    background-color: red;
+}
+.extreme
+{
+    background-color: violet;
+}
